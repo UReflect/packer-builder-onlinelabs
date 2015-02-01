@@ -9,7 +9,7 @@ Packer builder for [onlinelabs](http://labs.online.net/).
 
 Example output:
 ```
-==> Building simple-box
+==> Building example
 onlinelabs output will be in this color.
 
 ==> onlinelabs: Creating server...
@@ -21,10 +21,11 @@ onlinelabs output will be in this color.
     onlinelabs: + date -u
 ==> onlinelabs: Gracefully shutting down server...
 ==> onlinelabs: Forcefully shutting down server...
-==> onlinelabs: Creating snapshot: packer-1422820258
+==> onlinelabs: Creating snapshot: packer-snapshot-1422832257
+==> onlinelabs: Creating image: worker-base-1422832257
 ==> onlinelabs: Destroying server...
 Build 'onlinelabs' finished.
 
 ==> Builds finished. The artifacts of successful builds are:
---> onlinelabs: A snapshot was created: '9c9a7175-f774-4c9b-97db-5f8bfd41ea16' (packer-1422820258)
+--> onlinelabs: An image was created: 'fd122127-e1fc-4a09-b5ce-4ef41a58e543' (example-1422832257)
 ```
