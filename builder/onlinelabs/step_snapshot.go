@@ -32,7 +32,7 @@ func (s *stepSnapshot) Run(state multistep.StateBag) multistep.StepAction {
 		return multistep.ActionHalt
 	}
 
-	log.Printf("Snapshot image ID: %d", snapshot.ID)
+	log.Printf("Snapshot image ID: %s", snapshot.ID)
 
 	state.Put("snapshot_image_id", snapshot.ID)
 	state.Put("snapshot_name", c.SnapshotName)

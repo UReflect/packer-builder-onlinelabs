@@ -8,3 +8,4 @@
 .vagrant
 test/.env
 *onlinelabs*amd64
+/build
