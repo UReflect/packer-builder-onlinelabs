@@ -7,6 +7,8 @@ after_success:
 - goxc -bc "linux,amd64 darwin,amd64" -d "${TRAVIS_BUILD_DIR}/build"
 addons:
   artifacts:
-    key: bogus
-    secret: bogus
+    key:
+      secure: 6prx4WWOQGzOPWyaVAykItE0NYFVuEEfU++btFlUD8kHZ2F+nYAgZ3lHoy8ROUlzAKN8TtGEsWFBu5bUdqYIRU/bCatNOTIivl6fgaMmDpymp/2ZHG0NppFwIfPvvJ3v6tsX9K/QXXWU3TfkRWB/gBAbYjEdGf2MQ+4Le8v0iw4=
+    secret:
+      secure: E06gkdpZvooNqIg/F9K21bAx3tB5pxzS7FyP907MRihDwHPQrW3k/fBAUBJszPA9LjKs5aYgTYIWT85Ck3/mc5kSkN/fW6GAQT+7//7HK2yL5Qi1lVFxRK+FM6e+8ArPWZQdqce9TLk2HrTedfn2kdC7kW+yT4TY7+Dl2jd+kZg=
     bucket: meatballhat-packer-build-onlinelabs
