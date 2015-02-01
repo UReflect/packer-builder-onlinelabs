@@ -2,6 +2,12 @@ language: go
 sudo: false
 go:
 - 1.4.1
+env:
+  global:
+  - ARTIFACTS_DEBUG=1
+cache:
+  directories:
+  - $(go env GOROOT)
 after_success:
 - go get -x github.com/laher/goxc
 - goxc -bc "linux,amd64 darwin,amd64" -d "${TRAVIS_BUILD_DIR}/build"
