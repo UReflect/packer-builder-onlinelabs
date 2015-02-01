@@ -8,8 +8,9 @@ env:
 cache:
   directories:
   - /home/travis/.gvm/gos/go1.4.1
-after_success:
+before_script:
 - go get -x github.com/laher/goxc
+script:
 - goxc -bc "linux,amd64 darwin,amd64" -d "${TRAVIS_BUILD_DIR}/build"
 - find . -name .goxc-temp | xargs rm -rf
 addons:
