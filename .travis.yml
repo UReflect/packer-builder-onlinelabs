@@ -10,7 +10,6 @@ before_script:
 - go get -x github.com/laher/goxc
 script:
 - goxc -bc "linux,amd64 darwin,amd64" -d "${TRAVIS_BUILD_DIR}/build"
-- find . -name .goxc-temp | xargs rm -rf
 addons:
   artifacts:
     bucket: meatballhat-packer-build-onlinelabs

@@ -245,7 +245,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	}
 
 	artifact := &Artifact{
-		id:     state.Get("snapshot_id").(string),
+		id:     state.Get("snapshot_image_id").(string),
 		name:   state.Get("snapshot_name").(string),
 		client: client,
 	}

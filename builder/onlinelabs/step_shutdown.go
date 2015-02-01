@@ -11,7 +11,7 @@ import (
 type stepShutdown struct{}
 
 func (s *stepShutdown) Run(state multistep.StateBag) multistep.StepAction {
-	comm := state.Get("comm").(packer.Communicator)
+	comm := state.Get("communicator").(packer.Communicator)
 	ui := state.Get("ui").(packer.Ui)
 	serverID := state.Get("server_id").(string)
 	c := state.Get("config").(*config)
@@ -19,9 +19,7 @@ func (s *stepShutdown) Run(state multistep.StateBag) multistep.StepAction {
 
 	ui.Say("Gracefully shutting down server...")
 
-	cmd := &packer.RemoteCmd{
-		Command: "shutdown -h now",
-	}
+	cmd := &packer.RemoteCmd{Command: "halt"}
 
 	if err := comm.Start(cmd); err != nil {
 		state.Put("error", err)

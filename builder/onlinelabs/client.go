@@ -97,6 +97,7 @@ func (c *Client) GetServer(id string) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if resp.StatusCode >= 300 {
 		return nil, errFromResponse("fetching server failed", resp)
 	}
@@ -112,16 +113,13 @@ func (c *Client) GetServer(id string) (*Server, error) {
 
 func (c *Client) DestroyServer(id string) error {
 	path := fmt.Sprintf("/servers/%s", id)
-	resp, err := NewAPIRequest(c, "DELETE", path, nil)
+	resp, _ := NewAPIRequest(c, "DELETE", path, nil)
 
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode >= 300 {
-		return errFromResponse("fetching server failed", resp)
+	if resp.StatusCode == 204 {
+		return nil
 	}
 
-	return nil
+	return errFromResponse("destroying server failed", resp)
 }
 
 func (c *Client) PowerOnServer(id string) error {
@@ -211,10 +209,12 @@ func (c *Client) DestroyImage(id string) error {
 }
 
 func NewAPIRequest(c *Client, method, path string, body interface{}) (*http.Response, error) {
-	bodyReader := bytes.NewReader([]byte(""))
+	var err error
+	bodyBytes := []byte("")
+	bodyReader := bytes.NewReader(bodyBytes)
 
 	if body != nil {
-		bodyBytes, err := json.Marshal(body)
+		bodyBytes, err = json.Marshal(body)
 		if err != nil {
 			return nil, err
 		}
@@ -236,6 +236,7 @@ func NewAPIRequest(c *Client, method, path string, body interface{}) (*http.Resp
 	req.Header.Set("X-Auth-Token", c.APIToken)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", UAString)
+	req.Header.Set("Content-Length", fmt.Sprintf("%d", len(bodyBytes)))
 	return http.DefaultClient.Do(req)
 }
 
