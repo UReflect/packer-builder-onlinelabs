@@ -42,9 +42,7 @@ const (
 )
 
 func TestServerSerialization(t *testing.T) {
-	srv := &Server{
-		Bootscript: &NullString{},
-	}
+	srv := &Server{}
 	err := json.Unmarshal([]byte(serverJSON), srv)
 	if err != nil {
 		t.Error(err)

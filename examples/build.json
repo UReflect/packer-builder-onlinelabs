@@ -1,0 +1,18 @@
+{
+  "builders": [
+    {
+      "type": "onlinelabs"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "{{ .Vars }} sudo -E sh '{{ .Path }}'",
+      "inline": [
+        "export DEBIAN_FRONTEND=noninteractive",
+        "apt-get update -yq",
+        "apt-get upgrade -y"
+      ]
+    }
+  ]
+}
