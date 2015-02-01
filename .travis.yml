@@ -14,6 +14,6 @@ addons:
   artifacts:
     bucket: meatballhat-packer-build-onlinelabs
     secret:
-      secure: zdd0HonTQ6Bwykh8y+9KSt+jXl6WNP1hTHJ0YUIhLX8BLoaGTII+IS/VlxH6rozG1lRKk7Ls1cSeNS5GhJu3jCaxGEa/fXMld0kUVKkKQo/rIKW965dkEf2ez+qvGKs2nljfeWyXOxdq6cevoDf+LHqvR/tVjvxwNvVAqo2bLLE=
+      secure: IjloP19oHYpjXfM6gcyef1TLFr9k4AFNcyxo/C7hjmqd26l0NUUUgus2+DCw1GFI4iA8LR3nsoOJuNFrMUdvbxe0c8Y3L9eDUsyVlth4Xw1+GK14dwIasuyCPB+EEjQoYhW2UCUZSfKOw4RLF7WTeDGYKf3bMqnu9Cqqy/8aOc0=
     key:
-      secure: kfFtNnC/ou+D0gqLoKZZpZXaHi+rOY1nN/cmomELTrD6x8OslKCfPAhT9Pq2UWDTyNrmPIoYrUNYsvwjpj08gFIKnfJ1fVDCdi9TsaH1BUbiQ1gXE8U1eie1Hkw2CElF9Suez6jBPlAH2TMOYxLlxgK300Vl5im1l3c8sNI83fA=
+      secure: Nx1ik0WksX5kKzXslzGB2CVbM98Mfes126G2gG9/4W/9pGKnrgM+6DxgLRGPMh/fPctTSAzHl0t0KnGxHRchfq72kepQd8qHbY9DJSHOh5cDZq18H06JyAf80VjwUaQDFW9buH3s+xHR4fHo55keqwOvXP3vlODb4WW6GHrJ+co=
