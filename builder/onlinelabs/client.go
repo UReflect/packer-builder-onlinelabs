@@ -28,6 +28,7 @@ type ClientInterface interface {
 	PowerOffServer(string) error
 	DestroyServer(string) error
 	CreateSnapshot(string, string, string) (*Snapshot, error)
+	DestroySnapshot(string) error
 	CreateImage(string, string, string, string) (*Image, error)
 	DestroyImage(string) error
 }
@@ -165,6 +166,17 @@ func (c *Client) CreateSnapshot(name, org, volumeID string) (*Snapshot, error) {
 	}
 
 	return snBody["snapshot"], nil
+}
+
+func (c *Client) DestroySnapshot(id string) error {
+	path := fmt.Sprintf("/snapshots/%s", id)
+	resp, _ := NewAPIRequest(c, "DELETE", path, nil)
+
+	if resp.StatusCode == 204 {
+		return nil
+	}
+
+	return errFromResponse("destroying snapshot failed", resp)
 }
 
 func (c *Client) CreateImage(org, name, arch, rootVolume string) (*Image, error) {

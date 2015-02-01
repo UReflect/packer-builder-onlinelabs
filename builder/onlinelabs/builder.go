@@ -32,6 +32,7 @@ type config struct {
 	ServerVolumes     []*Volume `mapstructure:"volumes"`
 	DynamicPublicIP   bool      `mapstructure:"dynamic_public_ip"`
 	SnapshotName      string    `mapstructure:"snapshot_name"`
+	ImageArtifactName string    `mapstructure:"image_artifact_name"`
 	SSHUsername       string    `mapstructure:"ssh_username"`
 	SSHPassword       string    `mapstructure:"ssh_password"`
 	SSHPrivateKeyFile string    `mapstructure:"ssh_private_key_file"`
@@ -105,7 +106,11 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 	}
 
 	if b.config.SnapshotName == "" {
-		b.config.SnapshotName = getenvDefault("ONLINELABS_SNAPSHOT_NAME", "packer-{{timestamp}}")
+		b.config.SnapshotName = getenvDefault("ONLINELABS_SNAPSHOT_NAME", "packer-snapshot-{{ timestamp }}")
+	}
+
+	if b.config.ImageArtifactName == "" {
+		b.config.ImageArtifactName = getenvDefault("ONLINELABS_IMAGE_ARTIFACT_NAME", "packer-image-{{ timestamp }}")
 	}
 
 	if b.config.SSHUsername == "" {
@@ -142,15 +147,16 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 	}
 
 	templates := map[string]*string{
-		"image_id":      &b.config.ImageID,
-		"account_url":   &b.config.AccountURL,
-		"api_url":       &b.config.APIURL,
-		"api_token":     &b.config.APIToken,
-		"snapshot_name": &b.config.SnapshotName,
-		"server_name":   &b.config.ServerName,
-		"ssh_username":  &b.config.SSHUsername,
-		"ssh_timeout":   &b.config.RawSSHTimeout,
-		"state_timeout": &b.config.RawStateTimeout,
+		"image_id":            &b.config.ImageID,
+		"account_url":         &b.config.AccountURL,
+		"api_url":             &b.config.APIURL,
+		"api_token":           &b.config.APIToken,
+		"snapshot_name":       &b.config.SnapshotName,
+		"image_artifact_name": &b.config.ImageArtifactName,
+		"server_name":         &b.config.ServerName,
+		"ssh_username":        &b.config.SSHUsername,
+		"ssh_timeout":         &b.config.RawSSHTimeout,
+		"state_timeout":       &b.config.RawStateTimeout,
 	}
 
 	for n, ptr := range templates {
@@ -219,7 +225,8 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		&common.StepProvision{},
 		&stepShutdown{},
 		&stepPowerOff{},
-		&stepSnapshot{},
+		&stepCreateSnapshot{},
+		&stepCreateImage{},
 	}
 
 	// Run the steps
@@ -239,14 +246,14 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		return nil, rawErr.(error)
 	}
 
-	if _, ok := state.GetOk("snapshot_name"); !ok {
-		log.Println("Failed to find snapshot_name in state. Bug?")
+	if _, ok := state.GetOk("image_name"); !ok {
+		log.Println("Failed to find image_name in state. Bug?")
 		return nil, nil
 	}
 
 	artifact := &Artifact{
-		id:     state.Get("snapshot_image_id").(string),
-		name:   state.Get("snapshot_name").(string),
+		id:     state.Get("image_id").(string),
+		name:   state.Get("image_name").(string),
 		client: client,
 	}
 

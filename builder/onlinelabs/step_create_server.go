@@ -37,6 +37,7 @@ func (s *stepCreateServer) Run(state multistep.StateBag) multistep.StepAction {
 	s.serverID = server.ID
 
 	state.Put("server_id", server.ID)
+	state.Put("server_arch", server.Image.Arch)
 
 	return multistep.ActionContinue
 }

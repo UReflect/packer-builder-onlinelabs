@@ -8,16 +8,16 @@ import (
 	"github.com/mitchellh/packer/packer"
 )
 
-type stepSnapshot struct{}
+type stepCreateSnapshot struct{}
 
-func (s *stepSnapshot) Run(state multistep.StateBag) multistep.StepAction {
+func (s *stepCreateSnapshot) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(ClientInterface)
 	ui := state.Get("ui").(packer.Ui)
 	c := state.Get("config").(*config)
 	serverID := state.Get("server_id").(string)
 	server, err := client.GetServer(serverID)
 	if err != nil {
-		err := fmt.Errorf("Error fetching server metadata: %s", err)
+		err := fmt.Errorf("error fetching server metadata: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
@@ -26,20 +26,32 @@ func (s *stepSnapshot) Run(state multistep.StateBag) multistep.StepAction {
 	ui.Say(fmt.Sprintf("Creating snapshot: %v", c.SnapshotName))
 	snapshot, err := client.CreateSnapshot(c.SnapshotName, c.OrganizationID, server.Volumes["0"].ID)
 	if err != nil {
-		err := fmt.Errorf("Error creating snapshot: %s", err)
+		err := fmt.Errorf("error creating snapshot: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
 
-	log.Printf("Snapshot image ID: %s", snapshot.ID)
+	log.Printf("Snapshot ID: %s", snapshot.ID)
 
-	state.Put("snapshot_image_id", snapshot.ID)
+	state.Put("snapshot_id", snapshot.ID)
 	state.Put("snapshot_name", c.SnapshotName)
 
 	return multistep.ActionContinue
 }
 
-func (s *stepSnapshot) Cleanup(state multistep.StateBag) {
-	// no cleanup
+func (s *stepCreateSnapshot) Cleanup(state multistep.StateBag) {
+	ok := false
+	snapshotID := ""
+
+	if snapshotID, ok = state.Get("snapshot_id").(string); !ok || snapshotID == "" {
+		log.Printf("no snapshot id found; skipping cleanup")
+		return
+	}
+
+	client := state.Get("client").(ClientInterface)
+	err := client.DestroySnapshot(snapshotID)
+	if err != nil {
+		log.Printf("error destroying snapshot %v: %v", snapshotID, err)
+	}
 }
