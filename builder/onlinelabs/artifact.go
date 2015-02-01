@@ -25,7 +25,7 @@ func (*Artifact) Files() []string {
 }
 
 func (a *Artifact) String() string {
-	return fmt.Sprintf("A snapshot was created: '%v'", a.id)
+	return fmt.Sprintf("A snapshot was created: '%v' (%v)", a.id, a.name)
 }
 
 func (a *Artifact) State(name string) interface{} {

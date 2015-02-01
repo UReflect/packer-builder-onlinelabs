@@ -7,6 +7,8 @@ import (
 )
 
 var (
+	MaxWaitErrors = 5
+
 	errInvalidServerState = fmt.Errorf("only 'up' and 'down' server states are supported")
 )
 
@@ -16,6 +18,7 @@ func waitForServerState(desiredState, serverID string, client ClientInterface, t
 
 	result := make(chan error, 1)
 	go func() {
+		errors := 0
 		attempts := 0
 		for {
 			attempts += 1
@@ -23,6 +26,11 @@ func waitForServerState(desiredState, serverID string, client ClientInterface, t
 			log.Printf("Checking server status... (attempt: %d)", attempts)
 			server, err := client.GetServer(serverID)
 			if err != nil {
+				if errors < MaxWaitErrors {
+					errors++
+					log.Printf("Error caught while waiting for server status (%d out of %d): %v", errors, MaxWaitErrors, err)
+					continue
+				}
 				result <- err
 				return
 			}
