@@ -5,6 +5,7 @@ go:
 env:
   global:
   - ARTIFACTS_DEBUG=1
+  - ARTIFACTS_PERMISSIONS=public-read
 before_script:
 - go get -x github.com/laher/goxc
 script:
