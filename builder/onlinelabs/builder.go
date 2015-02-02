@@ -68,11 +68,10 @@ func getenvDefault(key, dflt string) string {
 }
 
 func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
-	md, err := common.DecodeConfig(&b.config, raws...)
+	md, err := common.DecodeConfig(b.config, raws...)
 	if err != nil {
 		return nil, err
 	}
-
 	b.config.tpl, err = packer.NewConfigTemplate()
 	if err != nil {
 		return nil, err
@@ -168,6 +167,20 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 		}
 	}
 
+	newTags := []string{}
+	for _, v := range b.config.ServerTags {
+		v, err := b.config.tpl.Process(v, nil)
+		if err != nil {
+			errs = packer.MultiErrorAppend(
+				errs, fmt.Errorf("error processing tag %s: %s", v, err))
+			continue
+		}
+
+		newTags = append(newTags, v)
+	}
+
+	b.config.ServerTags = newTags
+
 	if b.config.APIToken == "" {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("an api_token must be specified"))
@@ -191,7 +204,8 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 		return nil, errs
 	}
 
-	common.ScrubConfig(b.config, b.config.APIToken)
+	log.Println(common.ScrubConfig(b.config, b.config.APIToken))
+
 	return nil, nil
 }
 

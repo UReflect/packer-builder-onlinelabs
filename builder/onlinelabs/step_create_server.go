@@ -2,6 +2,7 @@ package onlinelabs
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/mitchellh/multistep"
@@ -18,6 +19,8 @@ func (s *stepCreateServer) Run(state multistep.StateBag) multistep.StepAction {
 	c := state.Get("config").(*config)
 
 	ui.Say("Creating server...")
+	log.Printf("server creation params: name=%q org=%q image=%q volumes=%v tags=%v",
+		c.ServerName, c.OrganizationID, c.ImageID, c.ServerVolumes, c.ServerTags)
 
 	server, err := client.CreateServer(c.ServerName, c.OrganizationID, c.ImageID, c.ServerVolumes, c.ServerTags)
 
