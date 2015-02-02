@@ -2,6 +2,7 @@ package onlinelabs
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/packer"
@@ -52,7 +53,21 @@ func (s *stepCreateServer) Cleanup(state multistep.StateBag) {
 
 	ui.Say("Destroying server...")
 
-	err := client.DestroyServer(s.serverID)
+	err := client.PowerOffServer(s.serverID)
+	if err != nil {
+		ui.Error(fmt.Sprintf(
+			"Error powering off server. Please destroy it manually: %v", s.serverID))
+		return
+	}
+
+	err = waitForServerState("stopped", s.serverID, client, 30*time.Second)
+	if err != nil {
+		ui.Error(fmt.Sprintf(
+			"Error waiting for server to stop. Please destroy it manually: %v", s.serverID))
+		return
+	}
+
+	err = client.DestroyServer(s.serverID)
 	if err != nil {
 		ui.Error(fmt.Sprintf(
 			"Error destroying server. Please destroy it manually: %v", s.serverID))
