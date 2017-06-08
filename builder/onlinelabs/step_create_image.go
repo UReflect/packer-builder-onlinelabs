@@ -13,7 +13,7 @@ type stepCreateImage struct{}
 func (s *stepCreateImage) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(ClientInterface)
 	ui := state.Get("ui").(packer.Ui)
-	c := state.Get("config").(*config)
+	c := state.Get("config").(Config)
 	snapshotID := state.Get("snapshot_id").(string)
 	serverArch := state.Get("server_arch").(string)
 

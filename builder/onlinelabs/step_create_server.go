@@ -16,7 +16,7 @@ type stepCreateServer struct {
 func (s *stepCreateServer) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(ClientInterface)
 	ui := state.Get("ui").(packer.Ui)
-	c := state.Get("config").(*config)
+	c := state.Get("config").(Config)
 
 	ui.Say("Creating server...")
 	log.Printf("server creation params: name=%q org=%q image=%q volumes=%v tags=%v",

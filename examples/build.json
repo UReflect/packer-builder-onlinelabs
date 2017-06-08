@@ -1,7 +1,13 @@
 {
   "builders": [
     {
-      "type": "onlinelabs"
+      	"type": "onlinelabs",
+	"communicator": "ssh",
+	"ssh_private_key_file": "/Users/thomas/.ssh/id_rsa",
+	"ssh_username": "root",
+	"region": "us-east-1",
+	"source_image": "ami-884748e0",
+        "instance_type": "m3.medium"
     }
   ],
   "provisioners": [

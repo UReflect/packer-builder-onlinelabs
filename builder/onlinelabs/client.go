@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 )
 
 var (
-	AccountURL, _ = url.Parse("https://account.cloud.online.net")
-	APIURL, _     = url.Parse("https://api.cloud.online.net")
+	AccountURL, _ = url.Parse("https://account.scaleway.com")
+	APIURL, _     = url.Parse("https://cp-par1.scaleway.com")
 )
 
 const (
@@ -240,6 +241,7 @@ func NewAPIRequest(c *Client, method, path string, body interface{}) (*http.Resp
 	}
 
 	url.Path = path
+	log.Println(url.String())
 	req, err := http.NewRequest(method, url.String(), bodyReader)
 	if err != nil {
 		return nil, err

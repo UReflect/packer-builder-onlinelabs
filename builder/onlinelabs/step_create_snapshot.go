@@ -13,7 +13,7 @@ type stepCreateSnapshot struct{}
 func (s *stepCreateSnapshot) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(ClientInterface)
 	ui := state.Get("ui").(packer.Ui)
-	c := state.Get("config").(*config)
+	c := state.Get("config").(Config)
 	serverID := state.Get("server_id").(string)
 	server, err := client.GetServer(serverID)
 	if err != nil {

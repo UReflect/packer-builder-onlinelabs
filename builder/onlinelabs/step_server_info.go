@@ -12,12 +12,12 @@ type stepServerInfo struct{}
 func (s *stepServerInfo) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(ClientInterface)
 	ui := state.Get("ui").(packer.Ui)
-	c := state.Get("config").(*config)
+	c := state.Get("config").(Config)
 	serverID := state.Get("server_id").(string)
 
 	ui.Say("Waiting for server to become active...")
 
-	err := waitForServerState("running", serverID, client, c.stateTimeout)
+	err := waitForServerState("running", serverID, client, c.StateTimeout)
 	if err != nil {
 		err := fmt.Errorf("Error waiting for server to become active: %s", err)
 		state.Put("error", err)

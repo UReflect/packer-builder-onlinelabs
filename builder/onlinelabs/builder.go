@@ -6,19 +6,22 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"strconv"
 	"time"
 
+	"github.com/hashicorp/packer/common"
+	"github.com/hashicorp/packer/common/uuid"
+	"github.com/hashicorp/packer/helper/communicator"
+	"github.com/hashicorp/packer/helper/config"
+	"github.com/hashicorp/packer/packer"
+	"github.com/hashicorp/packer/template/interpolate"
 	"github.com/mitchellh/multistep"
-	"github.com/mitchellh/packer/common"
-	"github.com/mitchellh/packer/common/uuid"
-	"github.com/mitchellh/packer/packer"
 )
 
 const BuilderId = "meatballhat.onlinelabs"
 
-type config struct {
+type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
+	Comm                communicator.Config `mapstructure:",squash"`
 
 	AccountURL string `mapstructure:"account_url"`
 	APIURL     string `mapstructure:"api_url"`
@@ -33,28 +36,24 @@ type config struct {
 	DynamicPublicIP   bool      `mapstructure:"dynamic_public_ip"`
 	SnapshotName      string    `mapstructure:"snapshot_name"`
 	ImageArtifactName string    `mapstructure:"image_artifact_name"`
-	SSHUsername       string    `mapstructure:"ssh_username"`
-	SSHPassword       string    `mapstructure:"ssh_password"`
-	SSHPrivateKeyFile string    `mapstructure:"ssh_private_key_file"`
-	SSHPort           uint      `mapstructure:"ssh_port"`
+	InstanceType      string    `mapstructure:"instance_type"`
+	Region            string    `mapstructure:"region"`
+	SourceImage       string    `mapstructure:"source_image"`
 
-	RawSSHTimeout   string `mapstructure:"ssh_timeout"`
 	RawStateTimeout string `mapstructure:"state_timeout"`
+	StateTimeout    time.Duration
 
-	sshTimeout   time.Duration
-	stateTimeout time.Duration
-
-	tpl *packer.ConfigTemplate
+	ctx interpolate.Context
 }
 
 type Builder struct {
-	config *config
+	config Config
 	runner multistep.Runner
 }
 
 func NewBuilder() *Builder {
 	return &Builder{
-		config: &config{},
+		config: Config{},
 		runner: nil,
 	}
 }
@@ -68,17 +67,13 @@ func getenvDefault(key, dflt string) string {
 }
 
 func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
-	md, err := common.DecodeConfig(b.config, raws...)
+	err := config.Decode(&b.config, &config.DecodeOpts{
+		Interpolate:        true,
+		InterpolateContext: &b.config.ctx,
+	}, raws...)
 	if err != nil {
 		return nil, err
 	}
-	b.config.tpl, err = packer.NewConfigTemplate()
-	if err != nil {
-		return nil, err
-	}
-	b.config.tpl.UserVars = b.config.PackerUserVars
-
-	errs := common.CheckUnusedConfig(md)
 
 	if b.config.AccountURL == "" {
 		b.config.AccountURL = getenvDefault("ONLINELABS_ACCOUNT_URL", AccountURL.String())
@@ -112,70 +107,25 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 		b.config.ImageArtifactName = getenvDefault("ONLINELABS_IMAGE_ARTIFACT_NAME", "packer-image-{{ timestamp }}")
 	}
 
-	if b.config.SSHUsername == "" {
-		b.config.SSHUsername = getenvDefault("ONLINELABS_SSH_USERNAME", "root")
-	}
-
-	if b.config.SSHPassword == "" {
-		b.config.SSHPassword = os.Getenv("ONLINELABS_SSH_PASSWORD")
-	}
-
-	if b.config.SSHPrivateKeyFile == "" {
-		b.config.SSHPrivateKeyFile = os.Getenv("ONLINELABS_SSH_PRIVATE_KEY_FILE")
-	}
-
-	if b.config.SSHPort == 0 {
-		v, err := strconv.ParseUint(getenvDefault("ONLINELABS_SSH_PORT", "22"), 0, 64)
-		if err == nil {
-			b.config.SSHPort = uint(v)
-		} else {
-			b.config.SSHPort = 22
-		}
-	}
-
-	if b.config.RawSSHTimeout == "" {
-		b.config.RawSSHTimeout = getenvDefault("ONLINELABS_RAW_SSH_TIMEOUT", "1m")
+	if b.config.Comm.SSHUsername == "" {
+		b.config.Comm.SSHUsername = getenvDefault("ONLINELABS_SSH_USERNAME", "root")
 	}
 
 	if b.config.RawStateTimeout == "" {
 		b.config.RawStateTimeout = getenvDefault("ONLINELABS_RAW_STATE_TIMEOUT", "6m")
 	}
 
+	var errs *packer.MultiError
+	errs = packer.MultiErrorAppend(errs, b.config.Comm.Prepare(&b.config.ctx)...)
+
 	if errs != nil && len(errs.Errors) > 0 {
 		return nil, errs
 	}
 
-	templates := map[string]*string{
-		"image_id":            &b.config.ImageID,
-		"account_url":         &b.config.AccountURL,
-		"api_url":             &b.config.APIURL,
-		"api_token":           &b.config.APIToken,
-		"snapshot_name":       &b.config.SnapshotName,
-		"image_artifact_name": &b.config.ImageArtifactName,
-		"server_name":         &b.config.ServerName,
-		"ssh_username":        &b.config.SSHUsername,
-		"ssh_timeout":         &b.config.RawSSHTimeout,
-		"state_timeout":       &b.config.RawStateTimeout,
-	}
-
-	for n, ptr := range templates {
-		var err error
-		*ptr, err = b.config.tpl.Process(*ptr, nil)
-		if err != nil {
-			errs = packer.MultiErrorAppend(
-				errs, fmt.Errorf("Error processing %s: %s", n, err))
-		}
-	}
-
 	newTags := []string{}
+	log.Println(b.config.ServerTags)
 	for _, v := range b.config.ServerTags {
-		v, err := b.config.tpl.Process(v, nil)
-		if err != nil {
-			errs = packer.MultiErrorAppend(
-				errs, fmt.Errorf("error processing tag %s: %s", v, err))
-			continue
-		}
-
+		// Check errors here
 		newTags = append(newTags, v)
 	}
 
@@ -186,19 +136,12 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 			errs, errors.New("an api_token must be specified"))
 	}
 
-	sshTimeout, err := time.ParseDuration(b.config.RawSSHTimeout)
-	if err != nil {
-		errs = packer.MultiErrorAppend(
-			errs, fmt.Errorf("Failed parsing ssh_timeout: %s", err))
-	}
-	b.config.sshTimeout = sshTimeout
-
 	stateTimeout, err := time.ParseDuration(b.config.RawStateTimeout)
 	if err != nil {
 		errs = packer.MultiErrorAppend(
 			errs, fmt.Errorf("Failed parsing state_timeout: %s", err))
 	}
-	b.config.stateTimeout = stateTimeout
+	b.config.StateTimeout = stateTimeout
 
 	if errs != nil && len(errs.Errors) > 0 {
 		return nil, errs
@@ -231,10 +174,10 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		&stepCreateServer{},
 		&stepStartServer{},
 		&stepServerInfo{},
-		&common.StepConnectSSH{
-			SSHAddress:     sshAddress,
-			SSHConfig:      sshConfig,
-			SSHWaitTimeout: 5 * time.Minute,
+		&communicator.StepConnect{
+			Host:      sshAddress,
+			SSHConfig: sshConfig,
+			Config:    &b.config.Comm,
 		},
 		&common.StepProvision{},
 		&stepShutdown{},

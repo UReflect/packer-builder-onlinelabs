@@ -12,7 +12,7 @@ type stepPowerOff struct{}
 
 func (s *stepPowerOff) Run(state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(ClientInterface)
-	c := state.Get("config").(*config)
+	c := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 	serverID := state.Get("server_id").(string)
 
@@ -38,7 +38,7 @@ func (s *stepPowerOff) Run(state multistep.StateBag) multistep.StepAction {
 	}
 
 	log.Println("Waiting for poweroff event to complete...")
-	err = waitForServerState("stopped", serverID, client, c.stateTimeout)
+	err = waitForServerState("stopped", serverID, client, c.StateTimeout)
 	if err != nil {
 		state.Put("error", err)
 		ui.Error(err.Error())

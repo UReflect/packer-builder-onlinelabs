@@ -3,24 +3,25 @@ package onlinelabs
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
-	"code.google.com/p/go.crypto/ssh"
 	"github.com/mitchellh/multistep"
+	"golang.org/x/crypto/ssh"
 )
 
 func sshAddress(state multistep.StateBag) (string, error) {
-	config := state.Get("config").(*config)
 	ipAddress := state.Get("server_ip").(string)
-	return fmt.Sprintf("%s:%d", ipAddress, config.SSHPort), nil
+	return fmt.Sprintf("%s", ipAddress), nil
 }
 
 func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
-	config := state.Get("config").(*config)
+	config := state.Get("config").(Config)
 	// privateKey := state.Get("privateKey").(string)
 
 	// signer, err := ssh.ParsePrivateKey([]byte(privateKey))
-	pkFile, err := os.Open(config.SSHPrivateKeyFile)
+	log.Println(config.Comm.SSHPrivateKey)
+	pkFile, err := os.Open(config.Comm.SSHPrivateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -34,9 +35,10 @@ func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 	}
 
 	return &ssh.ClientConfig{
-		User: config.SSHUsername,
+		User: config.Comm.SSHUsername,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}, nil
 }

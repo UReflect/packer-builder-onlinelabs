@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"log"
 
-	"code.google.com/p/gosshold/ssh"
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/common/uuid"
 	"github.com/mitchellh/packer/packer"
+	"golang.org/x/crypto/ssh"
 )
 
 type stepCreateSSHKey struct {
@@ -73,7 +73,7 @@ func (s *stepCreateSSHKey) Cleanup(state multistep.StateBag) {
 
 	client := state.Get("client").(ClientInterface)
 	ui := state.Get("ui").(packer.Ui)
-	c := state.Get("config").(*config)
+	c := state.Get("config").(Config)
 
 	ui.Say("Deleting temporary ssh key...")
 	err := client.DestroyKey(s.keyId)
