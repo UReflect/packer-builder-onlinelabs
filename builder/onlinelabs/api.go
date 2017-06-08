@@ -55,7 +55,7 @@ type Server struct {
 	Arch           string             `json:"arch"`
 	ExtraNetworks  []interface{}      `json:"extra_networks"`
 	Name           string             `json:"name"`
-	Volumes        map[string]*Volume `json:"volume"`
+	Volumes        map[string]*Volume `json:"volumes"`
 	SecurityGroup  struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`

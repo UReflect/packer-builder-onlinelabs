@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/mitchellh/multistep"
-	"github.com/mitchellh/packer/packer"
+	"github.com/hashicorp/packer/packer"
 )
 
 type stepCreateImage struct{}

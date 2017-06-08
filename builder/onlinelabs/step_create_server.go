@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/packer/packer"
 	"github.com/mitchellh/multistep"
-	"github.com/mitchellh/packer/packer"
 )
 
 type stepCreateServer struct {
@@ -56,14 +56,7 @@ func (s *stepCreateServer) Cleanup(state multistep.StateBag) {
 
 	ui.Say("Destroying server...")
 
-	err := client.PowerOffServer(s.serverID)
-	if err != nil {
-		ui.Error(fmt.Sprintf(
-			"Error powering off server. Please destroy it manually: %v", s.serverID))
-		return
-	}
-
-	err = waitForServerState("stopped", s.serverID, client, 30*time.Second)
+	err := waitForServerState("stopped", s.serverID, client, 90*time.Second)
 	if err != nil {
 		ui.Error(fmt.Sprintf(
 			"Error waiting for server to stop. Please destroy it manually: %v", s.serverID))

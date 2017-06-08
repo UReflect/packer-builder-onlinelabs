@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/packer/packer"
 	"github.com/mitchellh/multistep"
-	"github.com/mitchellh/packer/packer"
 )
 
 type stepCreateSnapshot struct{}
@@ -24,6 +24,7 @@ func (s *stepCreateSnapshot) Run(state multistep.StateBag) multistep.StepAction 
 	}
 
 	ui.Say(fmt.Sprintf("Creating snapshot: %v", c.SnapshotName))
+	log.Println(server)
 	snapshot, err := client.CreateSnapshot(c.SnapshotName, c.OrganizationID, server.Volumes["0"].ID)
 	if err != nil {
 		err := fmt.Errorf("error creating snapshot: %s", err)

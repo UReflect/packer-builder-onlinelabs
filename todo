@@ -1,4 +1,7 @@
 - Makefile
-- Clean API struct
+- Clean API Server struct
 - Handle Params from builder
 - Create Repo
+- Clean image name
+- Clean logger
+- SSH Key mgmt

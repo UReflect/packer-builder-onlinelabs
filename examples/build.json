@@ -7,7 +7,8 @@
 	"ssh_username": "root",
 	"region": "us-east-1",
 	"source_image": "ami-884748e0",
-        "instance_type": "m3.medium"
+        "instance_type": "m3.medium",
+	"image_artifact_name": "img_test"
     }
   ],
   "provisioners": [
@@ -16,8 +17,7 @@
       "execute_command": "{{ .Vars }} sudo -E sh '{{ .Path }}'",
       "inline": [
         "export DEBIAN_FRONTEND=noninteractive",
-        "apt-get update -yq",
-        "apt-get upgrade -y"
+        "echo hello"
       ]
     }
   ]
